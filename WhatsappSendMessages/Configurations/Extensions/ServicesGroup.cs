@@ -72,7 +72,7 @@ namespace WhatsappSendMessages.Configurations.Extensions
             WhatsAppBusinessCloudApiConfig whatsAppConfig = config.GetSection("WhatsAppBusinessCloudApiConfiguration")
                 .Get<WhatsAppBusinessCloudApiConfig>()!;
 
-            services.AddWhatsAppBusinessCloudApiService(whatsAppConfig, "v22.0");
+            services.AddWhatsAppBusinessCloudApiService(whatsAppConfig, whatsAppConfig.Version);
 
             // La libreria registra el HttpClient tipado con Timeout de 10 minutos y sin
             // circuit breaker. Bajo un caida/lentitud del API de WhatsApp eso deja las

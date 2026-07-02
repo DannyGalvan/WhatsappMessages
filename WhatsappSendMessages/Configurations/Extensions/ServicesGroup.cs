@@ -44,6 +44,12 @@ namespace WhatsappSendMessages.Configurations.Extensions
 
             services.AddLogging(loggingBuilder =>
             {
+                // WebApplication.CreateBuilder ya registro los providers default (Console,
+                // Debug, etc.), que leen de "Logging:LogLevel" y no de "Serilog:MinimumLevel".
+                // Sin ClearProviders quedan corriendo en paralelo y los overrides del appsettings
+                // (ej. bajar EF Core a Warning) nunca les aplican.
+                loggingBuilder.ClearProviders();
+
                 // Niveles, sinks (Console/MSSqlServer) y columnas extra se definen enteramente
                 // en la seccion "Serilog" de appsettings; nada queda hardcodeado en C#.
                 var log = new LoggerConfiguration()
@@ -70,7 +76,17 @@ namespace WhatsappSendMessages.Configurations.Extensions
                 .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(TimeSpan.FromSeconds(20)))
                 .AddPolicyHandler(HttpPolicyExtensions
                     .HandleTransientHttpError()
-                    .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)));
+                    .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30)))
+                // La libreria deja el HttpClientHandler con UseProxy = true (default), que en
+                // Windows depende de WinHttpAutoProxySvc para resolver el proxy del sistema en
+                // cada conexion saliente. Si ese servicio falla, la resolucion de proxy cuelga
+                // y las requests a graph.facebook.com nunca salen. El servidor sale directo a
+                // internet sin proxy corporativo, asi que se desactiva por completo.
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler
+                {
+                    UseProxy = false,
+                    AutomaticDecompression = System.Net.DecompressionMethods.GZip | System.Net.DecompressionMethods.Deflate
+                });
 
             return services;
         }

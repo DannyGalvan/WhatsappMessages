@@ -27,38 +27,7 @@ namespace WhatsappSendMessages.Context
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<MessagesTemplate>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.Property(e => e.Id).ValueGeneratedOnAdd();
-                entity.Property(e => e.ContactInput)
-                    .HasMaxLength(20);
-                entity.Property(e => e.MessageId)
-                    .HasMaxLength(500);
-                entity.Property(e => e.MessageStatus)
-                    .HasMaxLength(50);
-                entity.Property(e => e.MessageTemplateName)
-                    .HasMaxLength(200);
-                entity.Property(e => e.MessagingProduct)
-                    .HasMaxLength(50);
-                entity.Property(e => e.WaId)
-                    .HasMaxLength(20);
-            });
-
-            modelBuilder.Entity<ApiKey>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-
-                entity.Property(e => e.Name)
-                    .HasMaxLength(200)
-                    .IsRequired();
-                entity.Property(e => e.KeyHash)
-                    .HasMaxLength(64)
-                    .IsRequired();
-
-                entity.HasIndex(e => e.KeyHash).IsUnique();
-            });
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(WhatsappMessagesContext).Assembly);
         }
     }
 }

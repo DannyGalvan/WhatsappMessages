@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Polly;
 using Polly.Extensions.Http;
@@ -11,7 +10,6 @@ using WhatsappSendMessages.Context;
 using WhatsappSendMessages.Services;
 using Serilog;
 using Serilog.Extensions.Logging;
-using Serilog.Sinks.MSSqlServer;
 
 
 namespace WhatsappSendMessages.Configurations.Extensions
@@ -44,30 +42,15 @@ namespace WhatsappSendMessages.Configurations.Extensions
                     .RequireClaim(ApiKeyAuthenticationDefaults.IsAdminClaimType, "true"));
             });
 
-            services.AddLogging(logginBuilder =>
+            services.AddLogging(loggingBuilder =>
             {
-                var columnOptions = new ColumnOptions
-                {
-                    AdditionalColumns = new Collection<SqlColumn>
-                {
-                    new() { ColumnName = "RequestId", DataType = System.Data.SqlDbType.NVarChar, DataLength = 50 }
-                }
-                };
-
-                logginBuilder.AddConfiguration(config.GetSection("Serilog"));
-
+                // Niveles, sinks (Console/MSSqlServer) y columnas extra se definen enteramente
+                // en la seccion "Serilog" de appsettings; nada queda hardcodeado en C#.
                 var log = new LoggerConfiguration()
-                    .MinimumLevel.Information()
-                    .MinimumLevel.Override("Microsoft", Serilog.Events.LogEventLevel.Warning)
-                    .Enrich.FromLogContext()
-                    .WriteTo.MSSqlServer(
-                        connectionString: config.GetConnectionString("WhatsAppMessages"),
-                        sinkOptions: new MSSqlServerSinkOptions { TableName = "Logs", AutoCreateSqlTable = true },
-                        columnOptions: columnOptions,
-                        restrictedToMinimumLevel: Serilog.Events.LogEventLevel.Information)
+                    .ReadFrom.Configuration(config)
                     .CreateLogger();
 
-                logginBuilder.AddProvider(new SerilogLoggerProvider(log));
+                loggingBuilder.AddProvider(new SerilogLoggerProvider(log));
             });
 
             WhatsAppBusinessCloudApiConfig whatsAppConfig = config.GetSection("WhatsAppBusinessCloudApiConfiguration")

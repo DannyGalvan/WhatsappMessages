@@ -22,6 +22,7 @@ namespace WhatsappSendMessages.Context
 
         public DbSet<MessagesTemplate> MessagesTemplate { get; set; }
         public DbSet<ApiKey> ApiKeys { get; set; }
+        public DbSet<WhatsAppAccessToken> WhatsAppAccessTokens { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

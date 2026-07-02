@@ -10,6 +10,7 @@ using WhatsappSendMessages.Context;
 using WhatsappSendMessages.Entities;
 using WhatsappSendMessages.Entities.Request;
 using WhatsappSendMessages.Entities.Response;
+using WhatsappSendMessages.Services;
 
 namespace WhatsappSendMessages.Controllers
 {
@@ -20,6 +21,7 @@ namespace WhatsappSendMessages.Controllers
     public partial class SendTemplateMessageController : ControllerBase
     {
         private readonly IWhatsAppBusinessClient _whatsAppBusinessClient;
+        private readonly IWhatsAppCloudApiConfigProvider _cloudApiConfigProvider;
         private readonly ILogger<SendTemplateMessageController> _logger;
         private readonly WhatsappMessagesContext _context;
 
@@ -66,8 +68,10 @@ namespace WhatsappSendMessages.Controllers
                     textTemplateMessage.Template.Components.Add(textMessageComponent);
                 }
 
+                var cloudApiConfig = await _cloudApiConfigProvider.GetCurrentConfigAsync(cancellationToken);
+
                 WhatsAppResponse results = await _whatsAppBusinessClient.SendTextMessageTemplateAsync(
-                    textTemplateMessage, cancellationToken: cancellationToken);
+                    textTemplateMessage, cloudApiConfig, cancellationToken);
 
                 MessagesTemplate message = new()
                 {

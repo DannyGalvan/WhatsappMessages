@@ -28,6 +28,7 @@ namespace WhatsappSendMessages.Configurations.Extensions
 
             services.AddMemoryCache();
             services.AddScoped<IApiKeyService, ApiKeyService>();
+            services.AddScoped<IWhatsAppCloudApiConfigProvider, WhatsAppCloudApiConfigProvider>();
 
             // Autenticacion por API key como scheme propio, igual patron que Cookies/JwtBearer:
             // los endpoints se protegen con [Authorize(AuthenticationSchemes = ApiKeyAuthenticationDefaults.AuthenticationScheme)].

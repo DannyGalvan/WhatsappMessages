@@ -17,6 +17,7 @@ namespace WhatsappSendMessages
             var app = builder.Build();
 
             await app.EnsureAdminApiKeyAsync();
+            await app.EnsureWhatsAppAccessTokenAsync();
 
             app.UseSwagger();
             app.UseSwaggerUI();

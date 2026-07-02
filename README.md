@@ -8,6 +8,7 @@ API en .NET 8 para enviar plantillas de WhatsApp (Meta Cloud API) y recibir su w
 - SQL Server accesible (connection string en `appsettings.{Environment}.json`)
 - Cuenta de WhatsApp Business Cloud API (Meta) con Phone Number ID, Business Account ID y un Access Token
 - Herramienta `dotnet-ef` (ya versionada en `.config/dotnet-tools.json`, se restaura con `dotnet tool restore`)
+- Para desplegar (`deploy_iis.sh`): `sshpass`, `node`/`npm` y acceso SSH a un Windows Server con IIS
 
 ## Configuracion inicial
 
@@ -30,17 +31,26 @@ Los archivos `appsettings.Development.json` y `appsettings.Production.json` esta
     "Using": [ "Serilog.Sinks.Console", "Serilog.Sinks.MSSqlServer" ],
     "MinimumLevel": {
       "Default": "Information",
-      "Override": { "Microsoft": "Warning", "System": "Warning" }
+      "Override": {
+        "Microsoft.EntityFrameworkCore": "Warning",
+        "Microsoft.EntityFrameworkCore.Database.Command": "Warning",
+        "System": "Warning"
+      }
     },
     "WriteTo": [
       { "Name": "Console" },
       {
         "Name": "MSSqlServer",
         "Args": {
-          "connectionString": "server=TU_SERVIDOR; Database=WhatsAppMessages; User Id=TU_USUARIO; Password=TU_PASSWORD; Trust Server Certificate=true",
+          "connectionString": "WhatsAppMessages",
           "tableName": "Logs",
           "autoCreateSqlTable": true,
-          "restrictedToMinimumLevel": "Information"
+          "restrictedToMinimumLevel": "Information",
+          "columnOptionsSection": {
+            "additionalColumns": [
+              { "columnName": "RequestId", "dataType": "nvarchar", "dataLength": 50 }
+            ]
+          }
         }
       }
     ],
@@ -50,6 +60,8 @@ Los archivos `appsettings.Development.json` y `appsettings.Production.json` esta
 ```
 
 El `AccessToken` de arriba solo se usa una vez: al primer arranque, si la tabla `WhatsAppAccessTokens` esta vacia, la app lo copia a base de datos automaticamente (ver [Rotacion de credenciales](#rotacion-de-credenciales)). De ahi en adelante se ignora y se puede borrar del archivo.
+
+El `connectionString` del sink de `MSSqlServer` es el **nombre** de la entrada en `ConnectionStrings` (no la cadena completa) — Serilog la resuelve sola desde ahi.
 
 ## Base de datos
 
@@ -116,9 +128,38 @@ curl -X PUT http://localhost:5238/api/v1/WhatsAppAccessToken \
   -d '{"accessToken":"<nuevo-token>"}'
 ```
 
+## Resiliencia del cliente HTTP hacia WhatsApp
+
+El `HttpClient` tipado que usa `WhatsappBusiness.CloudApi` se reconfigura en `Configurations/Extensions/ServicesGroup.cs` para que una caida del API de Meta no deje solicitudes colgadas indefinidamente:
+
+- **Timeout de 30s** por request (la libreria trae 10 minutos por default).
+- **Timeout de Polly de 20s** por intento, para cortar antes de llegar al techo del `HttpClient`.
+- **Circuit breaker** (5 fallos seguidos → abre 30s): si el API de WhatsApp esta caido, las siguientes solicitudes fallan al instante en vez de intentar conectar y acumularse.
+- **`UseProxy = false`** en el `HttpClientHandler`: por default depende de la auto-deteccion de proxy de Windows (WinHTTP), que se cuelga si el servicio `WinHttpAutoProxySvc` falla en el servidor, bloqueando toda salida hacia `graph.facebook.com`. Se desactiva porque el servidor sale directo a internet sin proxy corporativo.
+- El `CancellationToken` del request HTTP entrante se propaga hasta la llamada al API de WhatsApp y al `SaveChangesAsync`, para no seguir trabajando si el cliente ya se desconecto.
+
+## Logging
+
+Serilog se configura enteramente desde la seccion `Serilog` de `appsettings` (niveles, sinks, columnas extra) — nada queda hardcodeado en `ServicesGroup.cs`. Se llama `loggingBuilder.ClearProviders()` antes de registrar el provider de Serilog para quitar los providers default de ASP.NET Core (Console/Debug), que de lo contrario siguen imprimiendo en paralelo leyendo de `Logging:LogLevel` en vez de `Serilog:MinimumLevel`, duplicando salida e ignorando los overrides configurados (ej. bajar el ruido de EF Core a `Warning`).
+
+## Despliegue
+
+`deploy_iis.sh` publica el proyecto, empaqueta el output y lo despliega via SSH a un IIS remoto (detiene el App Pool, sube y extrae el paquete, lo reinicia, verifica la URL).
+
+```bash
+cp .env.deploy.example .env.deploy
+# Editar .env.deploy con los valores reales
+./deploy_iis.sh
+```
+
+`.env.deploy` se carga con `source` (es bash real): si algun valor (ej. `DEPLOY_PASSWORD`) tiene caracteres especiales de shell (`( ) * ? ! @ $`), va entre comillas simples para que no rompa la sintaxis ni dispare expansion de glob. El archivo real esta en `.gitignore`; solo se versiona `.env.deploy.example`.
+
 ## Estructura del proyecto
 
 ```
+deploy_iis.sh                        Script de deploy manual via SSH a IIS
+.env.deploy.example                  Plantilla de variables para el deploy (el real no se versiona)
+
 WhatsappSendMessages/
   Authentication/     Scheme de autenticacion por API key (AuthenticationHandler)
   Configurations/      Extensiones de arranque (ConfigGroup, ServicesGroup, ApplicationGroup)

@@ -1,6 +1,4 @@
-﻿using System;
-using Microsoft.OpenApi.Models;
-using WhatsappSendMessages.Configurations.Models;
+﻿using Microsoft.OpenApi.Models;
 
 namespace WhatsappSendMessages.Configurations.Extensions
 {
@@ -8,20 +6,6 @@ namespace WhatsappSendMessages.Configurations.Extensions
     {
         public static IServiceCollection AddConfigGroup(this IServiceCollection services, WebApplicationBuilder builder)
         {
-            string environment = builder.Environment.EnvironmentName;
-
-            // Configure the ConfigurationBuilder y load the configurations del archive appsettings.json
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true) // Load base file appsettings.json
-            .AddJsonFile($"appsettings.{environment}.json", optional: true, reloadOnChange: true) // Load environment-specific file
-                .AddEnvironmentVariables()
-                .Build();
-
-            IConfiguration apiKeyConfig = configuration.GetSection("ApiKeyConfig");
-
-            services.Configure<ApiKeyConfig>(apiKeyConfig);
-
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Whatsapp Messages Misol", Version = "v1" });

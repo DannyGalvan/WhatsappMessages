@@ -1,9 +1,11 @@
 ﻿using Lombok.NET;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WhatsappBusiness.CloudApi;
 using WhatsappBusiness.CloudApi.Interfaces;
 using WhatsappBusiness.CloudApi.Messages.Requests;
 using WhatsappBusiness.CloudApi.Response;
+using WhatsappSendMessages.Authentication;
 using WhatsappSendMessages.Context;
 using WhatsappSendMessages.Entities;
 using WhatsappSendMessages.Entities.Request;
@@ -14,6 +16,7 @@ namespace WhatsappSendMessages.Controllers
     [AllArgsConstructor]
     [Route("api/v1/[controller]")]
     [ApiController]
+    [Authorize(AuthenticationSchemes = ApiKeyAuthenticationDefaults.AuthenticationScheme)]
     public partial class SendTemplateMessageController : ControllerBase
     {
         private readonly IWhatsAppBusinessClient _whatsAppBusinessClient;
@@ -21,7 +24,7 @@ namespace WhatsappSendMessages.Controllers
         private readonly WhatsappMessagesContext _context;
 
         [HttpPost]
-        public async Task<IActionResult> SendTemplate(TemplateRequest request)
+        public async Task<IActionResult> SendTemplate(TemplateRequest request, CancellationToken cancellationToken)
         {
             try
             {
@@ -63,7 +66,8 @@ namespace WhatsappSendMessages.Controllers
                     textTemplateMessage.Template.Components.Add(textMessageComponent);
                 }
 
-                WhatsAppResponse results = await _whatsAppBusinessClient.SendTextMessageTemplateAsync(textTemplateMessage);
+                WhatsAppResponse results = await _whatsAppBusinessClient.SendTextMessageTemplateAsync(
+                    textTemplateMessage, cancellationToken: cancellationToken);
 
                 MessagesTemplate message = new()
                 {
@@ -76,7 +80,7 @@ namespace WhatsappSendMessages.Controllers
                 };
 
                 _context.MessagesTemplate.Add(message);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(cancellationToken);
 
                 _logger.LogInformation("Plantilla {plantilla} enviada con exito", request.TemplateName);
 

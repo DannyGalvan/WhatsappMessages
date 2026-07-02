@@ -21,6 +21,7 @@ namespace WhatsappSendMessages.Context
         }
 
         public DbSet<MessagesTemplate> MessagesTemplate { get; set; }
+        public DbSet<ApiKey> ApiKeys { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -43,6 +44,20 @@ namespace WhatsappSendMessages.Context
                     .HasMaxLength(50);
                 entity.Property(e => e.WaId)
                     .HasMaxLength(20);
+            });
+
+            modelBuilder.Entity<ApiKey>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Name)
+                    .HasMaxLength(200)
+                    .IsRequired();
+                entity.Property(e => e.KeyHash)
+                    .HasMaxLength(64)
+                    .IsRequired();
+
+                entity.HasIndex(e => e.KeyHash).IsUnique();
             });
         }
     }

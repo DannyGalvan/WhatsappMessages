@@ -1,4 +1,8 @@
 using WhatsappSendMessages.Configurations.Extensions;
+using WhatsappSendMessages.Configurations.Options;
+using WhatsappSendMessages.Context;
+using WhatsappSendMessages.Middleware;
+using Microsoft.Extensions.Options;
 
 namespace WhatsappSendMessages
 {
@@ -8,24 +12,33 @@ namespace WhatsappSendMessages
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            builder.Services.AddConfigGroup(builder);
+            builder.Services.AddSwaggerDocumentation(builder.Configuration);
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
             builder.Services.AddServicesGroup(builder.Configuration);
+            builder.Services.AddHealthChecks()
+                .AddDbContextCheck<WhatsappMessagesContext>();
 
             var app = builder.Build();
 
-            await app.EnsureAdminApiKeyAsync();
-            await app.EnsureWhatsAppAccessTokenAsync();
+            await app.RunStartupInitializersAsync();
 
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            app.UseMiddleware<OutOfMemoryRecoveryMiddleware>();
+
+            if (app.Services.GetRequiredService<IOptions<SwaggerOptions>>().Value.Enabled)
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             app.UseHttpsRedirection();
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            // /health: sin auth, util para que el monitor (IIS, Kubernetes,
+            // balanceador) detecte caidas como la del 30-sep-2026 desde fuera.
+            app.MapHealthChecks("/health");
 
             app.MapControllers();
 

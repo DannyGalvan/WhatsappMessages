@@ -1,6 +1,56 @@
-@WhatsappSendMessages_HostAddress = http://localhost:5238
+@host = http://localhost:5238
+@apiKey = pon-tu-api-key-aqui
 
-GET {{WhatsappSendMessages_HostAddress}}/weatherforecast/
-Accept: application/json
+### Webhook (publico, sin auth) - debe devolver el challenge tal cual
+GET {{host}}/api/v1/WebHookMessages?hub.mode=subscribe&hub.challenge=1234567890&hub.verify_token=12345
 
 ###
+
+### Enviar plantilla
+POST {{host}}/api/v1/SendTemplateMessage
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "number": "5215512345678",
+  "templateName": "compra_aprobada",
+  "parameters": [
+    { "type": "text", "parameterName": "nombre", "text": "Juan" }
+  ]
+}
+
+###
+
+### Listar API keys (requiere admin)
+GET {{host}}/api/v1/ApiKeys
+X-API-KEY: {{apiKey}}
+
+###
+
+### Crear API key (requiere admin)
+POST {{host}}/api/v1/ApiKeys
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "name": "cliente-x",
+  "isAdmin": false,
+  "expiresAt": null
+}
+
+###
+
+### Revocar API key (requiere admin)
+DELETE {{host}}/api/v1/ApiKeys/1
+X-API-KEY: {{apiKey}}
+
+###
+
+### Rotar Access Token de WhatsApp (requiere admin)
+PUT {{host}}/api/v1/WhatsAppAccessToken
+X-API-KEY: {{apiKey}}
+Content-Type: application/json
+
+{
+  "accessToken": "nuevo-token-aqui"
+}

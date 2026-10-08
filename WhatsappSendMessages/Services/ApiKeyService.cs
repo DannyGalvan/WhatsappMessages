@@ -48,9 +48,9 @@ namespace WhatsappSendMessages.Services
                 KeyHash = Hash(rawKey),
                 IsAdmin = isAdmin,
                 IsActive = true,
-                CreatedAt = DateTime.UtcNow,
                 ExpiresAt = expiresAt
             };
+            // CreatedAt/UpdatedAt/By los llena el AuditSaveChangesInterceptor.
 
             context.ApiKeys.Add(entity);
             await context.SaveChangesAsync(cancellationToken);
@@ -66,6 +66,7 @@ namespace WhatsappSendMessages.Services
 
             entity.IsActive = false;
             entity.RevokedAt = DateTime.UtcNow;
+            // UpdatedAt/UpdatedBy los llena el AuditSaveChangesInterceptor.
             await context.SaveChangesAsync(cancellationToken);
 
             cache.Remove(CacheKeyFor(entity.KeyHash));

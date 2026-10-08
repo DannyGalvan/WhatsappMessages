@@ -61,7 +61,7 @@ Los archivos `appsettings.Development.json` y `appsettings.Production.json` esta
 
 El `AccessToken` de arriba solo se usa una vez: al primer arranque, si la tabla `WhatsAppAccessTokens` esta vacia, la app lo copia a base de datos automaticamente (ver [Rotacion de credenciales](#rotacion-de-credenciales)). De ahi en adelante se ignora y se puede borrar del archivo.
 
-El `connectionString` del sink de `MSSqlServer` es el **nombre** de la entrada en `ConnectionStrings` (no la cadena completa) — Serilog la resuelve sola desde ahi.
+El `connectionString` del sink de `MSSqlServer` es el **nombre** de la entrada en `ConnectionStrings` (no la cadena completa) - Serilog la resuelve sola desde ahi.
 
 ## Base de datos
 
@@ -86,10 +86,10 @@ Por defecto levanta en `http://localhost:5238` (perfil `http`, ver `Properties/l
 
 Los endpoints de negocio requieren el header `X-API-KEY`. El modelo es opt-in por controlador/accion via `[Authorize(AuthenticationSchemes = "ApiKey")]` (igual que el `Authorize` nativo de .NET): sin el atributo, el endpoint queda publico.
 
-- `POST /api/v1/SendTemplateMessage` — requiere cualquier API key valida.
-- `GET /api/v1/WebHookMessages` — publico (se verifica solo con el `hub.verify_token` de Meta).
-- `/swagger*` — publico.
-- `GET|POST|DELETE /api/v1/ApiKeys` y `PUT /api/v1/WhatsAppAccessToken` — requieren una API key con `IsAdmin = true`.
+- `POST /api/v1/SendTemplateMessage` - requiere cualquier API key valida.
+- `GET /api/v1/WebHookMessages` - publico (se verifica solo con el `hub.verify_token` de Meta).
+- `/swagger*` - publico.
+- `GET|POST|DELETE /api/v1/ApiKeys` y `PUT /api/v1/WhatsAppAccessToken` - requieren una API key con `IsAdmin = true`.
 
 ### Primer arranque
 
@@ -134,13 +134,13 @@ El `HttpClient` tipado que usa `WhatsappBusiness.CloudApi` se reconfigura en `Co
 
 - **Timeout de 30s** por request (la libreria trae 10 minutos por default).
 - **Timeout de Polly de 20s** por intento, para cortar antes de llegar al techo del `HttpClient`.
-- **Circuit breaker** (5 fallos seguidos → abre 30s): si el API de WhatsApp esta caido, las siguientes solicitudes fallan al instante en vez de intentar conectar y acumularse.
+- **Circuit breaker** (5 fallos seguidos, abre 30s): si el API de WhatsApp esta caido, las siguientes solicitudes fallan al instante en vez de intentar conectar y acumularse.
 - **`UseProxy = false`** en el `HttpClientHandler`: por default depende de la auto-deteccion de proxy de Windows (WinHTTP), que se cuelga si el servicio `WinHttpAutoProxySvc` falla en el servidor, bloqueando toda salida hacia `graph.facebook.com`. Se desactiva porque el servidor sale directo a internet sin proxy corporativo.
 - El `CancellationToken` del request HTTP entrante se propaga hasta la llamada al API de WhatsApp y al `SaveChangesAsync`, para no seguir trabajando si el cliente ya se desconecto.
 
 ## Logging
 
-Serilog se configura enteramente desde la seccion `Serilog` de `appsettings` (niveles, sinks, columnas extra) — nada queda hardcodeado en `ServicesGroup.cs`. Se llama `loggingBuilder.ClearProviders()` antes de registrar el provider de Serilog para quitar los providers default de ASP.NET Core (Console/Debug), que de lo contrario siguen imprimiendo en paralelo leyendo de `Logging:LogLevel` en vez de `Serilog:MinimumLevel`, duplicando salida e ignorando los overrides configurados (ej. bajar el ruido de EF Core a `Warning`).
+Serilog se configura enteramente desde la seccion `Serilog` de `appsettings` (niveles, sinks, columnas extra) - nada queda hardcodeado en `ServicesGroup.cs`. Se llama `loggingBuilder.ClearProviders()` antes de registrar el provider de Serilog para quitar los providers default de ASP.NET Core (Console/Debug), que de lo contrario siguen imprimiendo en paralelo leyendo de `Logging:LogLevel` en vez de `Serilog:MinimumLevel`, duplicando salida e ignorando los overrides configurados (ej. bajar el ruido de EF Core a `Warning`).
 
 El provider se registra con `dispose: true` para que el sink de `MSSqlServer` haga flush al detener la aplicacion. Esto es importante porque el `OutOfMemoryRecoveryMiddleware` puede parar el proceso en cualquier momento; sin flush explicito, los ultimos logs en lote se perderian.
 
@@ -148,8 +148,8 @@ El provider se registra con `dispose: true` para que el sink de `MSSqlServer` ha
 
 `MessagesTemplate`, `ApiKeys` y `WhatsAppAccessTokens` exponen cuatro columnas de auditoria que se llenan automaticamente al guardar cambios:
 
-- `CreatedAt` / `CreatedBy` — sellados al insertar.
-- `UpdatedAt` / `UpdatedBy` — se refrescan en cada update. `Created*` se protege contra escritura accidental via `IsModified = false` en el `AuditSaveChangesInterceptor`.
+- `CreatedAt` / `CreatedBy` - sellados al insertar.
+- `UpdatedAt` / `UpdatedBy` - se refrescan en cada update. `Created*` se protege contra escritura accidental via `IsModified = false` en el `AuditSaveChangesInterceptor`.
 
 El actor se forma como `apikey:{id}:{name}` cuando el cambio ocurre dentro de un request autenticado, o `system` cuando viene de un inicializador/background. Las migraciones `AddAuditColumns` backfilean las filas existentes: las fechas reales no existen, asi que los registros historicos quedan con `CreatedBy = 'legacy'` y la fecha de deploy como aproximacion. Para `ApiKeys` se usa `COALESCE(RevokedAt, CreatedAt)` como `UpdatedAt` y para `WhatsAppAccessTokens` se copia `UpdatedAt` en `CreatedAt`.
 
@@ -187,7 +187,7 @@ cp .env.deploy.example .env.deploy
 
 El escenario del 30-sep-2026 (cache envenenado de `System.Text.Json` + `OutOfMemoryException` no reciclable por IIS) se mitiga con:
 
-- **App Pool en 64-bit**: la默认值 32-bit limita la memoria virtual a 4 GB y dispara OOM bajo carga real.
+- **App Pool en 64-bit**: el default de 32-bit limita la memoria virtual a 4 GB y dispara OOM bajo carga real.
 - **Private Memory Limit (KB)**: poner un techo (ej. 1.5x el consumo estable observado) para que IIS recicle el worker cuando se acerque, en vez de esperar al crash.
 - **Disable overlapped recycle**: si no, dos procesos compiten por el puerto durante el recycle y se pierden requests.
 - **Periodic recycle time** a una hora valle (no a las 12 AM que es cuando arrancan los jobs de Meta).

@@ -283,4 +283,11 @@ _Pvt_Extensions
 # FAKE - F# Make
 .fake/
 
+# graphify
+/graphify-out
 
+# claude
+.claude
+
+# plans
+/plans

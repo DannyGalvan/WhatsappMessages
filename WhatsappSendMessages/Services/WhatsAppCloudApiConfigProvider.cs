@@ -46,14 +46,14 @@ namespace WhatsappSendMessages.Services
             var entity = await context.WhatsAppAccessTokens.FirstOrDefaultAsync(cancellationToken);
             if (entity is null)
             {
-                entity = new WhatsAppAccessToken { Token = accessToken, UpdatedAt = DateTime.UtcNow };
+                entity = new WhatsAppAccessToken { Token = accessToken };
                 context.WhatsAppAccessTokens.Add(entity);
             }
             else
             {
                 entity.Token = accessToken;
-                entity.UpdatedAt = DateTime.UtcNow;
             }
+            // CreatedAt/UpdatedAt/By los llena el AuditSaveChangesInterceptor.
 
             await context.SaveChangesAsync(cancellationToken);
             cache.Remove(CacheKey);

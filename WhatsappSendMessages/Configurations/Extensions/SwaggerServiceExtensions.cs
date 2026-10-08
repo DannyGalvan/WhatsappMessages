@@ -1,12 +1,18 @@
-﻿using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Models;
+using WhatsappSendMessages.Configurations.Options;
 
 namespace WhatsappSendMessages.Configurations.Extensions
 {
-    public static class ConfigGroup
+    public static class SwaggerServiceExtensions
     {
-        public static IServiceCollection AddConfigGroup(this IServiceCollection services, WebApplicationBuilder builder)
+        public static IServiceCollection AddSwaggerDocumentation(this IServiceCollection services, IConfiguration config)
         {
-            builder.Services.AddSwaggerGen(c =>
+            services.Configure<SwaggerOptions>(config.GetSection("Swagger"));
+            var swagger = config.GetSection("Swagger").Get<SwaggerOptions>() ?? new SwaggerOptions();
+
+            if (!swagger.Enabled) return services;
+
+            services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Whatsapp Messages Misol", Version = "v1" });
 

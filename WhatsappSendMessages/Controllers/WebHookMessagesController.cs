@@ -1,5 +1,7 @@
-﻿using Lombok.NET;
+using Lombok.NET;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using WhatsappSendMessages.Configurations.Options;
 
 namespace WhatsappSendMessages.Controllers
 {
@@ -9,6 +11,7 @@ namespace WhatsappSendMessages.Controllers
     public partial class WebHookMessagesController : ControllerBase
     {
         private readonly ILogger<WebHookMessagesController> _logger;
+        private readonly IOptions<WhatsAppWebhookOptions> _options;
 
         [HttpGet]
         public ActionResult<string> ConfigureWhatsAppMessageWebhook([FromQuery(Name = "hub.mode")] string? hubMode,
@@ -16,7 +19,7 @@ namespace WhatsappSendMessages.Controllers
             [FromQuery(Name = "hub.verify_token")] string? hubVerifyToken)
         {
 
-            if (hubMode == "subscribe" && hubVerifyToken == "12345")
+            if (hubMode == "subscribe" && hubVerifyToken == _options.Value.VerifyToken)
             {
                 _logger.LogInformation("El WebHook ha sido verificado con exito");
                 return Ok(hubChallenge);

@@ -11,6 +11,11 @@ namespace WhatsappSendMessages.Configurations.Extensions
         // el resto de keys via api/v1/ApiKeys sin tocar appsettings ni redeploy.
         public static async Task EnsureAdminApiKeyAsync(this WebApplication app)
         {
+            // En Testing, el factory de tests siembra las API keys manualmente
+            // despues de EnsureCreated; este initializer se interpone entre
+            // Build() y el primer request y reventaria contra una BD vacia.
+            if (app.Environment.IsEnvironment("Testing")) return;
+
             using var scope = app.Services.CreateScope();
 
             var db = scope.ServiceProvider.GetRequiredService<WhatsappMessagesContext>();
@@ -31,6 +36,10 @@ namespace WhatsappSendMessages.Configurations.Extensions
         // adelante se rota via PUT api/v1/WhatsAppAccessToken, sin volver a tocar config.
         public static async Task EnsureWhatsAppAccessTokenAsync(this WebApplication app)
         {
+            // Mismo motivo que EnsureAdminApiKeyAsync: el factory de tests
+            // siembra el token explicitamente.
+            if (app.Environment.IsEnvironment("Testing")) return;
+
             using var scope = app.Services.CreateScope();
 
             var db = scope.ServiceProvider.GetRequiredService<WhatsappMessagesContext>();

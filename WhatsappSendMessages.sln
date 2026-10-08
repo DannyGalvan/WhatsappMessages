@@ -1,20 +1,46 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.12.35728.132 d17.12
+VisualStudioVersion = 17.12.35728.132
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsappSendMessages", "WhatsappSendMessages\WhatsappSendMessages.csproj", "{94D23C84-5103-42A4-A693-85DAE49B6544}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WhatsappSendMessages.Tests", "WhatsappSendMessages.Tests\WhatsappSendMessages.Tests.csproj", "{E6BCC352-770A-4527-9456-0E9FBDADA507}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{94D23C84-5103-42A4-A693-85DAE49B6544}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{94D23C84-5103-42A4-A693-85DAE49B6544}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94D23C84-5103-42A4-A693-85DAE49B6544}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{94D23C84-5103-42A4-A693-85DAE49B6544}.Debug|x64.Build.0 = Debug|Any CPU
+		{94D23C84-5103-42A4-A693-85DAE49B6544}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{94D23C84-5103-42A4-A693-85DAE49B6544}.Debug|x86.Build.0 = Debug|Any CPU
 		{94D23C84-5103-42A4-A693-85DAE49B6544}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94D23C84-5103-42A4-A693-85DAE49B6544}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94D23C84-5103-42A4-A693-85DAE49B6544}.Release|x64.ActiveCfg = Release|Any CPU
+		{94D23C84-5103-42A4-A693-85DAE49B6544}.Release|x64.Build.0 = Release|Any CPU
+		{94D23C84-5103-42A4-A693-85DAE49B6544}.Release|x86.ActiveCfg = Release|Any CPU
+		{94D23C84-5103-42A4-A693-85DAE49B6544}.Release|x86.Build.0 = Release|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Debug|x64.Build.0 = Debug|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Debug|x86.Build.0 = Debug|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Release|x64.ActiveCfg = Release|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Release|x64.Build.0 = Release|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Release|x86.ActiveCfg = Release|Any CPU
+		{E6BCC352-770A-4527-9456-0E9FBDADA507}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
